@@ -4,35 +4,13 @@
 %w(rubygems sinatra sinatra/base  erubis eventmachine  em-websocket open3).each{|lib|require lib}
 
 class WebServer < Sinatra::Base
-    #enable :sessions
-
-    use Rack::Static, :urls => ["/images","/css","/js" ], :root => "views"
-
     set  :run, true
-
     use Rack::Auth::Basic do |name, password|
         cmd = "svn ls https://svn1.intra.sina.com.cn/weibo/readme.txt --username #{name} --password #{password} --non-interactive --no-auth-cache --trust-server-cert"
         #system(cmd) == true # a hack for auth without ldap  ,haha!   
         #[name, password] == ['admin', 'test']
 		true
     end
-    
-    error 403 do
-      'Access forbidden'
-    end
-
-    get '/secret' do
-      403
-    end
-
-    before do
-       puts 'before filter' 
-    end
-
-    after do
-       puts 'after filter' 
-    end
-
     
 	get '/' do
 		'web socket demo:
@@ -70,8 +48,6 @@ class WebServer < Sinatra::Base
                     notifier.RequestPermission();
                 };
                 
-                /*------------------------------------------------------------------------------------------*/
-
 				if (window.WebSocket) {
 				    var ws = new WebSocket("ws://host:7777".replace("host",window.location.hostname));
 				    
@@ -107,19 +83,7 @@ EM.epoll = true if EM.epoll?
 
 EventMachine.run {
     WebServer.run!
-    
     EventMachine::WebSocket.start(:host => "0.0.0.0",:port => 7777) do |ws|
-        $_ws_ = ws
-        module Handler
-            def file_modified
-                File.open("#{path}","r") do|f|
-                    $_ws_.send(f.read)
-                end
-            end
-        end
-
-        EM.watch_file(File.join(Dir.pwd,'test.js'), Handler)
-        
         ws.onopen {
           puts "WebSocket connection open"
         }
