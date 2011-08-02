@@ -1,7 +1,7 @@
 #! /usr/bin/ruby
 #author newdongyuwei@gmail.com
 
-%w(rubygems sinatra sinatra/base  erubis eventmachine  em-websocket open3).each{|lib|require lib}
+%w(rubygems sinatra sinatra/base eventmachine  em-websocket).each{|lib|require lib}
 
 class WebServer < Sinatra::Base
     set  :run, true
