@@ -1,7 +1,7 @@
 #! /usr/bin/ruby
 #author newdongyuwei@gmail.com
 
-%w(rubygems sinatra sinatra/base eventmachine  em-websocket).each{|lib|require lib}
+%w(rubygems sinatra sinatra/base eventmachine  em-websocket stringio fakefs/safe ).each{|lib|require lib}
 
 class WebServer < Sinatra::Base
     set  :run, true
@@ -53,6 +53,11 @@ class WebServer < Sinatra::Base
 				    
 				    ws.onopen = function(){
 				        ws.send("puts \"web socket demo\" ");
+						setInterval(function(){
+    							if(ws.readyState === 1  && ws.bufferedAmount === 0){
+      								ws.send("KeepAlive");
+							}
+  						}, 20000);
 				    };
 				    
 				    ws.onmessage = function(evt){
@@ -89,14 +94,25 @@ EventMachine.run {
         }
         ws.onmessage do |msg|
             puts "WebSocket Recieved message: #{msg}"
+	    FakeFS.activate!
             begin
-                EM.system('ruby','-e',msg) do |out,status|
-                    puts status.exitstatus
-                    ws.send(out)
-                end
-            rescue
-                puts 'error: #{$!}'
+		if msg != "KeepAlive"
+			Thread.start{
+				EventMachine.system('ruby','-e',"$SAFE = 3 ; #{msg}") do |out,status|
+                    			puts status.exitstatus
+                   	 		if out.strip != "" 
+						ws.send(out)
+					end
+                		end
+			}
+		end
+	    rescue SecurityError
+		ws.send("You aren't allowed to run that command!")
+	    rescue Error => e
+                puts 'error: #{e}'
                 ws.send($!.to_s)
+	    ensure
+		FakeFS.deactivate!
             end
           
         end
