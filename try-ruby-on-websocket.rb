@@ -13,75 +13,79 @@ class WebServer < Sinatra::Base
     end
     
 	get '/' do
-		'web socket demo:
+		'please input ruby code (try ruby over WebSocket):
 		<hr>
 		<textarea id="content" style="width:500px;height:200px;"></textarea>
 		<br>
 		<button id="request-permission">request-permission</button>
-        <button id="send">send msg</button>
+        <button id="send">run ruby code!</button>
 		<hr>
-		logs:
+		excution result:
 		<br>
 		<textarea id="log" style="width:500px;height:200px"></textarea>
 		<script>
-			    function Notifier(){}
-			
-			    Notifier.prototype.RequestPermission = function(cb){
-			        window.webkitNotifications.requestPermission(function(){
-			            if (cb) {
-			                cb(window.webkitNotifications.checkPermission() == 0);
-			            }
-			        });
-			    }
-			
-			    Notifier.prototype.Notify = function(icon, title, body){
-			        if (window.webkitNotifications.checkPermission() === 0) {
-			            var popup = window.webkitNotifications.createNotification(icon, title, body);
-			            popup.show();
-			setTimeout(function(){
-				popup.cancel && popup.cancel();
-			}, 5000);//默认5s自动隐藏
-			
-			        return true;
-			    }
-			    return false;
-			}
-			
-			var notifier = new Notifier();
-			document.getElementById("request-permission").onclick = function(){
-			    notifier.RequestPermission();
-			};
-			
-			if (window.WebSocket) {
-			    var ws = new WebSocket("ws://host:7777".replace("host",window.location.hostname));
-			
-			ws.onopen = function(){
-			    ws.send("puts \"web socket demo\" ");
-				setInterval(function(){
-						if(ws.readyState === 1  && ws.bufferedAmount === 0){
-							ws.send("KeepAlive");
+			(function() {
+				function Notifier() {
+				}
+
+				Notifier.prototype.requestPermission = function(cb) {
+					window.webkitNotifications.requestPermission( function() {
+						if (cb) {
+							cb(window.webkitNotifications.checkPermission() == 0);
+						}
+					});
+				}
+				Notifier.prototype.notify = function(icon, title, body) {
+					if (window.webkitNotifications.checkPermission() === 0) {
+						var popup = window.webkitNotifications.createNotification(icon, title, body);
+						popup.show();
+						setTimeout( function() {
+							popup.cancel && popup.cancel();
+						}, 5000);//默认5s自动隐藏
+						return true;
 					}
-				}, 20000);
-			};
-			
-			ws.onmessage = function(evt){
-			    var data = evt.data;
-			    console.log(data);
-			    notifier.Notify("http://www.google.com.hk/intl/zh-CN/images/logo_cn.png", "WebSocket message:", data)
-				var log = document.getElementById("log");
-				log.value = data;
-			};
-			
-			ws.onclose = function(){
-			    console.log("socket closed");
-			};
-			
-			document.getElementById("send").onclick = function(){
-			    ws.send(document.getElementById("content").value.split("\n").join(";"));
-			    };
-			}else {
-			    alert("You browser does not support  web sockets,try google chrome");
-			};
+					return false;
+				}
+				var notifier = new Notifier() , btn = document.getElementById("request-permission");
+				btn.onclick = function() {
+					notifier.requestPermission();
+				};
+				if (!window.webkitNotifications || (window.webkitNotifications && window.webkitNotifications.checkPermission() === 0)) {
+					btn.style.display = "none";
+				}
+				if (window.WebSocket) {
+					var ws = new WebSocket("ws://host:7777".replace("host",window.location.hostname));
+
+					ws.onopen = function() {
+						ws.send("puts \"web socket demo\" ");
+						setInterval( function() {
+							if(ws.readyState === 1  && ws.bufferedAmount === 0) {
+								ws.send("KeepAlive");
+							}
+						}, 20000);
+					};
+					ws.onmessage = function(evt) {
+						var data = evt.data;
+						console.log(data);
+						if (window.webkitNotifications){
+							notifier.notify("http://tp3.sinaimg.cn/1645875054/50/1279883161/1", "WebSocket message:", data)
+						}else{
+							alert(data);
+						}
+						var log = document.getElementById("log");
+						log.value = data;
+					};
+					ws.onclose = function() {
+						console.log("socket closed");
+					};
+					document.getElementById("send").onclick = function() {
+						ws.send(document.getElementById("content").value.split("\n").join(";"));
+					};
+				} else {
+					alert("You browser does not support  web sockets,try chrome,safari5 ,firefox6,or opera11(opera:config#UserPrefs|EnableWebSockets)");
+				};
+			})();
+			    
 		</script>
         '
 	end
