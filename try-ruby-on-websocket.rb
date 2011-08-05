@@ -5,6 +5,11 @@
 
 class WebServer < Sinatra::Base
     set  :run, true
+    set :run ,true
+    set :port, 9999
+    set :environment, :production
+    set :logging, true
+
 =begin
     use Rack::Auth::Basic do |name, password|
         cmd = "svn ls https://svn1.intra.sina.com.cn/weibo/readme.txt --username #{name} --password #{password} --non-interactive --no-auth-cache --trust-server-cert"
