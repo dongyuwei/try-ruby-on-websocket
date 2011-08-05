@@ -5,12 +5,14 @@
 
 class WebServer < Sinatra::Base
     set  :run, true
+=begin
     use Rack::Auth::Basic do |name, password|
         cmd = "svn ls https://svn1.intra.sina.com.cn/weibo/readme.txt --username #{name} --password #{password} --non-interactive --no-auth-cache --trust-server-cert"
         #system(cmd) == true # a hack for auth without ldap  ,haha!   
         #[name, password] == ['admin', 'test']
-		true
+	true
     end
+=end
     
 	get '/' do
 		'please input ruby code (try ruby over WebSocket):
