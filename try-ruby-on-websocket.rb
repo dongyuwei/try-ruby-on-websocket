@@ -4,7 +4,6 @@
 %w(rubygems sinatra sinatra/base eventmachine  em-websocket stringio ).each{|lib|require lib}
 
 class WebServer < Sinatra::Base
-    set  :run, true
     set :run ,true
     set :port, 9999
     set :environment, :production
