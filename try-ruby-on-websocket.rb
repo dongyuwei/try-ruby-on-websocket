@@ -59,8 +59,10 @@ class WebServer < Sinatra::Base
 				if (!window.webkitNotifications || (window.webkitNotifications && window.webkitNotifications.checkPermission() === 0)) {
 					btn.style.display = "none";
 				}
-				if (window.WebSocket) {
-					var ws = new WebSocket("ws://host:7777".replace("host",window.location.hostname));
+				
+				if (window.WebSocket || window.MozWebSocket) {
+					var url = "ws://host:7777".replace("host",window.location.hostname);
+					var ws = window.WebSocket ?  new WebSocket(url) : new MozWebSocket(url);
 
 					ws.onopen = function() {
 						ws.send("puts \"web socket demo\" ");
