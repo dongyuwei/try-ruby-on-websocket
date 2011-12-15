@@ -63,10 +63,12 @@ class WebServer < Sinatra::Base
 				if (window.WebSocket || window.MozWebSocket) {
 					var url = "ws://host:7777".replace("host",window.location.hostname);
 					var ws = window.WebSocket ?  new WebSocket(url) : new MozWebSocket(url);
-
+                    var timer;
 					ws.onopen = function() {
 						ws.send("puts \"web socket demo\" ");
-						setInterval( function() {
+
+                        //重要:无数据时保持连接心跳
+						timer = setInterval( function() {
 							if(ws.readyState === 1  && ws.bufferedAmount === 0) {
 								ws.send("KeepAlive");
 							}
@@ -84,6 +86,7 @@ class WebServer < Sinatra::Base
 						log.value = data;
 					};
 					ws.onclose = function() {
+                        clearInterval(timer);
 						console.log("socket closed");
 					};
 					document.getElementById("send").onclick = function() {
