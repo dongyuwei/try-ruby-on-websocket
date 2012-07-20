@@ -59,9 +59,7 @@ EM.epoll = true if EM.epoll?
 EventMachine.run {
 	WebServer.run!
 	EventMachine::WebSocket.start(:host => "0.0.0.0",:port => 7777) do |ws|
-		ws.onopen {
-			puts "WebSocket connection open"
-		}
+		ws.onopen { puts "WebSocket connection open" }
 		ws.onmessage do |msg|
 			if msg != "KeepAlive"
 				Thread.start{
